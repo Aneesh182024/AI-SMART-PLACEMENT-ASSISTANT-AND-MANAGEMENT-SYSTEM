@@ -1,0 +1,80 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --bg-canvas: #F4F7F6;
+    --bg-card: #FFFFFF;
+    --bg-pearl-pink: #FDF2F8;
+    --btn-primary: #0D5C3A;
+    --btn-primary-hover: #0A472D;
+    --btn-secondary: #0EA5E9;
+    --focus-aqua: #0EA5E9;
+    --accent-mint: #108981;
+    --badge-pink-bg: #FCE7F3;
+    --badge-pink-text: #DB2777;
+    --text-primary: #1E293B;
+    --text-secondary: #64748B;
+    --border-subtle: #E2E8F0;
+  }
+
+  body {
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    background-color: #F4F7F6;
+    color: #1E293B;
+    min-height: 100vh;
+  }
+}
+
+/* Custom Utilities for Pearl Emerald & Aqua Pink theme */
+.pearl-card {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  box-shadow: 0 10px 25px -5px rgba(13, 92, 58, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.03);
+  border-radius: 1rem;
+}
+
+.pearl-card-glow {
+  background: #FFFFFF;
+  border: 1px solid #FCE7F3;
+  box-shadow: 0 12px 30px -5px rgba(219, 39, 119, 0.08), 0 8px 10px -6px rgba(14, 165, 233, 0.05);
+  border-radius: 1rem;
+}
+
+.btn-emerald {
+  background-color: #0D5C3A;
+  color: #FFFFFF;
+  font-weight: 600;
+  transition: all 0.2s ease-in-out;
+}
+.btn-emerald:hover {
+  background-color: #0A472D;
+  box-shadow: 0 4px 14px rgba(13, 92, 58, 0.25);
+  transform: translateY(-1px);
+}
+
+.btn-aqua {
+  background-color: #0EA5E9;
+  color: #FFFFFF;
+  font-weight: 600;
+  transition: all 0.2s ease-in-out;
+}
+.btn-aqua:hover {
+  background-color: #0284C7;
+  box-shadow: 0 4px 14px rgba(14, 165, 233, 0.25);
+  transform: translateY(-1px);
+}
+
+.input-field {
+  background-color: #FFFFFF;
+  border: 1px solid #CBD5E1;
+  color: #1E293B;
+  border-radius: 0.5rem;
+  padding: 0.625rem 0.875rem;
+  font-size: 0.875rem;
+  transition: all 0.15s ease-in-out;
+}
+.input-field:focus {
+  outline: none;
+  border-color: #0EA5E9;
+  box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.18);
+}
