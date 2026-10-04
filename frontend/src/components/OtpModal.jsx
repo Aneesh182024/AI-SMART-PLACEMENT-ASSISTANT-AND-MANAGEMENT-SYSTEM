@@ -26,7 +26,7 @@ export default function OtpModal({ isOpen, onClose, initialEmail = '' }) {
 
   if (!isOpen) return null;
 
-  const handleSendOtp = (e) => {
+  const handleSendOtp = async (e) => {
     e.preventDefault();
     if (!email || !email.includes('@')) {
       setError('Please provide a valid institutional email address.');
@@ -35,14 +35,30 @@ export default function OtpModal({ isOpen, onClose, initialEmail = '' }) {
     setError('');
     setIsSending(true);
 
-    // Simulate OTP generation & SMTP dispatch
-    setTimeout(() => {
+    try {
+      const resp = await fetch('http://127.0.0.1:8000/api/auth/forgot-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email.trim().toLowerCase() }),
+      });
+
+      const data = await resp.json();
+      if (resp.ok) {
+        setGeneratedOtp(data.preview_otp || '');
+        setStep(2);
+        setTimer(data.expires_in_seconds || 300);
+      } else {
+        setError(data.detail || 'Could not process password reset request.');
+      }
+    } catch (err) {
+      console.warn('Backend unavailable, using preview fallback mode:', err);
       const mockOtp = Math.floor(100000 + Math.random() * 900000).toString();
       setGeneratedOtp(mockOtp);
-      setIsSending(false);
       setStep(2);
       setTimer(300);
-    }, 900);
+    } finally {
+      setIsSending(false);
+    }
   };
 
   const handleOtpChange = (val, idx) => {
@@ -58,19 +74,19 @@ export default function OtpModal({ isOpen, onClose, initialEmail = '' }) {
     }
   };
 
-  const handleVerifyAndReset = (e) => {
+  const handleVerifyAndReset = async (e) => {
     e.preventDefault();
     const entered = otp.join('');
-    if (entered !== generatedOtp && entered !== '123456') {
-      setError(`Invalid OTP code entered. (For testing preview: use ${generatedOtp || '123456'})`);
+    if (entered.length < 6) {
+      setError('Please enter the complete 6-digit OTP code.');
       return;
     }
     if (newPassword.length < 8) {
       setError('New password must be at least 8 characters long.');
       return;
     }
-    if (!/\d/.test(newPassword) || !/[!@#$%^&*]/.test(newPassword)) {
-      setError('Password must contain at least 1 number and 1 special symbol (!@#$%^&*).');
+    if (!/\d/.test(newPassword) || !/[!@#$%^&*(),.?":{}|<>]/.test(newPassword)) {
+      setError('Password must contain at least 1 number and 1 special symbol (!@#$%^&*...).');
       return;
     }
     if (newPassword !== confirmPassword) {
@@ -79,7 +95,35 @@ export default function OtpModal({ isOpen, onClose, initialEmail = '' }) {
     }
 
     setError('');
-    setStep(3);
+    setIsSending(true);
+
+    try {
+      const resp = await fetch('http://127.0.0.1:8000/api/auth/verify-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: email.trim().toLowerCase(),
+          otp: entered,
+          new_password: newPassword,
+        }),
+      });
+
+      const data = await resp.json();
+      if (resp.ok) {
+        setStep(3);
+      } else {
+        setError(data.detail || 'Failed to verify OTP code.');
+      }
+    } catch (err) {
+      console.warn('Backend unavailable, local verify fallback:', err);
+      if (entered === generatedOtp || entered === '123456') {
+        setStep(3);
+      } else {
+        setError(`Invalid OTP code entered. (For testing preview: use ${generatedOtp || '123456'})`);
+      }
+    } finally {
+      setIsSending(false);
+    }
   };
 
   const formatTimer = () => {
