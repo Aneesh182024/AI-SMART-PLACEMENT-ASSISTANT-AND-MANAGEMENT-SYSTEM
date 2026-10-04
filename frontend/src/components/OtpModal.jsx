@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, Mail, KeyRound, CheckCircle2, ArrowRight, RefreshCw, AlertCircle } from 'lucide-react';
+import { API_BASE_URL } from '../config/api';
 
 export default function OtpModal({ isOpen, onClose, initialEmail = '' }) {
   const [step, setStep] = useState(1); // 1: Enter Email, 2: Enter OTP, 3: Success
@@ -36,7 +37,7 @@ export default function OtpModal({ isOpen, onClose, initialEmail = '' }) {
     setIsSending(true);
 
     try {
-      const resp = await fetch('http://127.0.0.1:8000/api/auth/forgot-password', {
+      const resp = await fetch(`${API_BASE_URL}/api/auth/forgot-password`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: email.trim().toLowerCase() }),
@@ -98,7 +99,7 @@ export default function OtpModal({ isOpen, onClose, initialEmail = '' }) {
     setIsSending(true);
 
     try {
-      const resp = await fetch('http://127.0.0.1:8000/api/auth/verify-otp', {
+      const resp = await fetch(`${API_BASE_URL}/api/auth/verify-otp`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

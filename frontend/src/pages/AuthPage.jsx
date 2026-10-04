@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { User, GraduationCap, ShieldCheck, Crown, KeyRound, Mail, Phone, Lock, Eye, EyeOff, AlertCircle, ArrowRight, CheckCircle2 } from 'lucide-react';
 import OtpModal from '../components/OtpModal';
+import { API_BASE_URL } from '../config/api';
 
 export default function AuthPage({ onLoginSuccess, onNavigate, initialAgreed = false }) {
   const [activeTab, setActiveTab] = useState('student'); // 'student' | 'teacher' | 'hod'
@@ -46,7 +47,7 @@ export default function AuthPage({ onLoginSuccess, onNavigate, initialAgreed = f
     }
 
     try {
-      const resp = await fetch('http://127.0.0.1:8000/api/auth/login', {
+      const resp = await fetch(`${API_BASE_URL}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

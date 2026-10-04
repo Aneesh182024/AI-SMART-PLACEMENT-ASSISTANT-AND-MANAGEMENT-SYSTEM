@@ -8,6 +8,7 @@ import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, 
   LineChart, Line, CartesianGrid, Legend 
 } from 'recharts';
+import { API_BASE_URL } from '../config/api';
 
 export default function AdminDashboard({ user, onLogout }) {
   // Roster Student Data State
@@ -202,7 +203,7 @@ export default function AdminDashboard({ user, onLogout }) {
     const token = localStorage.getItem('psna_token') || user?.token;
 
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/admin/upload-excel', {
+      const response = await fetch(`${API_BASE_URL}/api/admin/upload-excel`, {
         method: 'POST',
         headers: token ? { 'Authorization': `Bearer ${token}` } : {},
         body: formData,
@@ -231,8 +232,8 @@ export default function AdminDashboard({ user, onLogout }) {
     const token = localStorage.getItem('psna_token') || user?.token;
     try {
       const url = token 
-        ? `http://127.0.0.1:8000/api/admin/export-excel?token=${encodeURIComponent(token)}`
-        : 'http://127.0.0.1:8000/api/admin/export-excel';
+        ? `${API_BASE_URL}/api/admin/export-excel?token=${encodeURIComponent(token)}`
+        : `${API_BASE_URL}/api/admin/export-excel`;
 
       const response = await fetch(url, {
         headers: token ? { 'Authorization': `Bearer ${token}` } : {}
@@ -249,11 +250,11 @@ export default function AdminDashboard({ user, onLogout }) {
         window.URL.revokeObjectURL(downloadUrl);
         a.remove();
       } else {
-        window.open(`http://127.0.0.1:8000/api/admin/export-excel${token ? `?token=${token}` : ''}`, '_blank');
+        window.open(`${API_BASE_URL}/api/admin/export-excel${token ? `?token=${token}` : ''}`, '_blank');
       }
     } catch (err) {
       console.warn('Export direct trigger:', err);
-      window.open(`http://127.0.0.1:8000/api/admin/export-excel${token ? `?token=${token}` : ''}`, '_blank');
+      window.open(`${API_BASE_URL}/api/admin/export-excel${token ? `?token=${token}` : ''}`, '_blank');
     }
   };
 

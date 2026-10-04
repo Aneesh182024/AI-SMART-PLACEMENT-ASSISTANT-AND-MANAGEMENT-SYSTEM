@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  database:
+    image: postgres:15-alpine
+    container_name: psna_placement_db
+    restart: always
+    environment:
+      POSTGRES_DB: psna_placement
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: placement_secret_password_2026
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/01_schema.sql
+      - ./database/views.sql:/docker-entrypoint-initdb.d/02_views.sql
+      - ./database/seed.sql:/docker-entrypoint-initdb.d/03_seed.sql
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: psna_placement_api
+    restart: always
+    depends_on:
+      - database
+    environment:
+      DATABASE_URL: postgresql://postgres:placement_secret_password_2026@database:5432/psna_placement
+      JWT_SECRET_KEY: psna_cet_it_placement_secret_key_2026_aneesh_anne
+      SMTP_HOST: smtp.gmail.com
+      SMTP_PORT: 587
+      SMTP_EMAIL: ${SMTP_EMAIL:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+    ports:
+      - "8000:8000"
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_BASE_URL: http://localhost:8000
+    container_name: psna_placement_ui
+    restart: always
+    depends_on:
+      - backend
+    ports:
+      - "80:80"
+
+volumes:
+  postgres_data:
