@@ -22,9 +22,10 @@ class UserSignupRequest(BaseModel):
     agreed_to_terms: bool
 
 class UserLoginRequest(BaseModel):
-    identifier: str # Register No, Email, or Phone
+    email: Optional[str] = None
+    identifier: Optional[str] = None
     password: str
-    role: str # 'student', 'teacher', 'hod'
+    role: Optional[str] = None
 
 class ForgotPasswordRequest(BaseModel):
     email: str

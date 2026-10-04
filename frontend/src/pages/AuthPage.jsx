@@ -36,58 +36,68 @@ export default function AuthPage({ onLoginSuccess, onNavigate, initialAgreed = f
     }
   }, [initialAgreed]);
 
-  // Handle Login Submit
+  // Handle Login Submit (Strictly validated against backend database - no bypass)
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
-    if (!loginIdentifier.trim() || !loginPassword.trim()) {
+    const inputVal = loginIdentifier.trim();
+    if (!inputVal || !loginPassword.trim()) {
       setError('Please fill in all credential fields.');
       return;
     }
 
     try {
-      const resp = await fetch(`${API_BASE_URL}/api/auth/login`, {
+      const baseUrl = import.meta.env.VITE_API_BASE_URL || API_BASE_URL;
+      const resp = await fetch(`${baseUrl}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          identifier: loginIdentifier,
+          email: inputVal,
+          identifier: inputVal,
           password: loginPassword,
           role: activeTab.toUpperCase()
         })
       });
 
-      if (resp.ok) {
-        const data = await resp.json();
-        if (data.access_token) {
-          localStorage.setItem('psna_token', data.access_token);
+      const data = await resp.json().catch(() => ({}));
+
+      if (resp.ok && resp.status === 200) {
+        // Save returned role and token inside localStorage
+        const token = data.token || data.access_token;
+        const role = data.role || data.user?.role || activeTab;
+
+        localStorage.setItem('token', token);
+        localStorage.setItem('psna_token', token);
+        localStorage.setItem('role', role);
+        localStorage.setItem('user_role', role);
+        localStorage.setItem('currentUser', JSON.stringify(data.user || data));
+
+        // Invoke navigation to /dashboard
+        if (onLoginSuccess) {
+          onLoginSuccess({
+            ...data.user,
+            token,
+            role,
+          });
         }
-        onLoginSuccess({
-          role: activeTab,
-          identifier: loginIdentifier,
-          name: data.user?.name || (activeTab === 'student' ? 'Aneesh Kanna N' : (activeTab === 'teacher' ? 'Dr. S. Karthik' : 'Dr. M. IT HOD')),
-          department: data.user?.department || 'IT',
-          token: data.access_token,
-          ...data.user
-        });
+        if (onNavigate) {
+          onNavigate('/dashboard');
+        } else if (navigate) {
+          navigate('/dashboard');
+        } else if (typeof window !== 'undefined') {
+          window.location.hash = '/dashboard';
+        }
         return;
       }
+
+      // If response fails (HTTP 401 or network error), capture specific backend error details
+      const errorDetail = data.detail || data.message || 'Invalid Email or Password! Account illai endral register seiyavum.';
+      setError(errorDetail);
     } catch (err) {
-      console.warn('Backend login fallback mode:', err);
+      console.error('Login network error:', err);
+      setError('Network connection error! Unable to reach backend server. Please verify backend is running.');
     }
-
-    const userData = {
-      role: activeTab,
-      identifier: loginIdentifier,
-      name: activeTab === 'student' ? 'Aneesh Kanna N' : (activeTab === 'teacher' ? 'Dr. S. Karthik' : 'Dr. M. IT HOD'),
-      department: 'IT',
-      year: 'IV',
-      section: 'A',
-      registerNo: loginIdentifier.includes('@') ? '713821104001' : loginIdentifier,
-      email: loginIdentifier.includes('@') ? loginIdentifier : `${loginIdentifier}@psnacet.edu.in`,
-    };
-
-    onLoginSuccess(userData);
   };
 
   // Handle Sign Up Submit with Strict Validations

@@ -14,19 +14,44 @@ export default function App() {
   const [isPortfolioOpen, setIsPortfolioOpen] = useState(false);
   const [initialAgreedTerms, setInitialAgreedTerms] = useState(false);
 
-  // Navigation handler
+  // Restore session from localStorage on initial load
+  React.useEffect(() => {
+    try {
+      const savedUser = localStorage.getItem('currentUser');
+      const token = localStorage.getItem('token');
+      const role = localStorage.getItem('role');
+      if (token && savedUser) {
+        const parsed = JSON.parse(savedUser);
+        setCurrentUser(parsed);
+      }
+    } catch (e) {
+      console.error('Session restore error:', e);
+    }
+  }, []);
+
+  // Navigation handler with support for /dashboard routing
   const handleNavigate = (page, options = {}) => {
     if (options.agreed) {
       setInitialAgreedTerms(true);
     }
-    setCurrentPage(page);
+    if (page === '/dashboard' || page === 'dashboard') {
+      const currentRole = localStorage.getItem('role') || currentUser?.role || 'student';
+      if (currentRole.toLowerCase() === 'student') {
+        setCurrentPage('student');
+      } else {
+        setCurrentPage('admin');
+      }
+    } else {
+      setCurrentPage(page);
+    }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   // Login handler
   const handleLoginSuccess = (userData) => {
     setCurrentUser(userData);
-    if (userData.role === 'student') {
+    const userRole = (userData.role || localStorage.getItem('role') || 'student').toLowerCase();
+    if (userRole === 'student') {
       setCurrentPage('student');
     } else {
       // 'teacher' or 'hod'
@@ -37,6 +62,9 @@ export default function App() {
 
   // Logout handler
   const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('role');
+    localStorage.removeItem('currentUser');
     setCurrentUser(null);
     setCurrentPage('login');
     window.scrollTo({ top: 0, behavior: 'smooth' });
